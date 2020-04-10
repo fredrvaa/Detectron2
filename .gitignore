@@ -1,0 +1,9 @@
+# Files
+*.jpg
+*.png
+*.txt
+*.pkl
+*.yaml
+*.json
+
+__pycache__
