@@ -15,8 +15,8 @@ if __name__=='__main__':
     from detectron2.utils.logger import setup_logger
     setup_logger()
 
-    from datasets import Base
-    dataset = Base()
+    import datasets
+    dataset = datasets.BaseNew()
 
     fix_annotations(dataset.annotation_dir)
 
@@ -30,12 +30,12 @@ if __name__=='__main__':
     cfg.DATASETS.TRAIN = ("corrosion_train",)
     cfg.DATASETS.TEST = ("corrosion_val")
     cfg.DATALOADER.FILTER_EMPTY_ANNOTATIONS = False
-    cfg.MODEL.WEIGHTS = ("models/model_final_f6e8b1.pkl")
+    cfg.MODEL.WEIGHTS = ('/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]/model_0098999.pth')
     cfg.SOLVER.IMS_PER_BATCH = 2
     cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.CHECKPOINT_PERIOD = 3000
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # only has one class (corrosion)
-    cfg.OUTPUT_DIR = dataset.save_dir
+    cfg.OUTPUT_DIR = '/media/fredrik/HDD/Master/models/Faster R-CNN/100k[base]_50k[base+new]'
 
     # for d in random.sample(dataset_dicts, 10):
     #     img = cv2.imread(d["file_name"])

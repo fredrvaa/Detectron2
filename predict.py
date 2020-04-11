@@ -14,7 +14,7 @@ from detectron2.evaluation import COCOEvaluator
 from fix_annotations import fix_annotations
 from datasets import Base, BaseNew
 
-dataset = BaseNew()
+dataset = Base()
 
 fix_annotations(dataset.annotation_dir)
 
@@ -24,7 +24,7 @@ register_coco_instances("corrosion_test", {}, dataset.test_annos, dataset.test_i
 with open(os.path.join(dataset.save_dir, "last_checkpoint")) as file:
     model = file.readline()
 
-model = "model_0047999.pth"
+model = "model_0149999.pth"
 
 cfg = get_cfg()
 cfg.OUTPUT_DIR = dataset.save_dir
