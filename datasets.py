@@ -1,25 +1,29 @@
-class Base(object):
+class Dataset(object):
     def __init__(self):
-        self.annotation_dir = '/media/fredrik/HDD/Master/data/base/annotations'
+        self.val_images = '/media/fredrik/HDD/Master/data/dataset/val'
+        self.val_annos = '/media/fredrik/HDD/Master/data/dataset/val.json'
 
-        self.train_images = '/media/fredrik/HDD/Master/data/base/train'
-        self.train_annos = '/media/fredrik/HDD/Master/data/base/annotations/train.json'
+        self.test_images = '/media/fredrik/HDD/Master/data/dataset/test'
+        self.test_annos = '/media/fredrik/HDD/Master/data/dataset/test.json'
 
-        self.val_images = '/media/fredrik/HDD/Master/data/base/val'
-        self.val_annos = '/media/fredrik/HDD/Master/data/base/annotations/val.json'
+        self.aug_images = '/media/fredrik/HDD/Master/data/dataset/aug'
+        self.aug_annos = '/media/fredrik/HDD/Master/data/dataset/aug.json'
 
-        self.test_images = '/media/fredrik/HDD/Master/data/base/test'
-        self.test_annos = '/media/fredrik/HDD/Master/data/base/annotations/test.json'
-
-class BaseNew(object):
+class Base(Dataset):
     def __init__(self):
-        self.annotation_dir = '/media/fredrik/HDD/Master/data/base+new/annotations'
+        super().__init__()
 
-        self.train_images = '/media/fredrik/HDD/Master/data/base+new/train'
-        self.train_annos = '/media/fredrik/HDD/Master/data/base+new/annotations/train.json'
+        self.annotation_dir = '/media/fredrik/HDD/Master/data/dataset/train/base/annotations'
 
-        self.val_images = '/media/fredrik/HDD/Master/data/base+new/val'
-        self.val_annos = '/media/fredrik/HDD/Master/data/base+new/annotations/val.json'
+        self.train_images = '/media/fredrik/HDD/Master/data/dataset/train/base/train'
+        self.train_annos = '/media/fredrik/HDD/Master/data/dataset/train/base/annotations/train.json'
 
-        self.test_images = '/media/fredrik/HDD/Master/data/base+new/test'
-        self.test_annos = '/media/fredrik/HDD/Master/data/base+new/annotations/test.json'
+
+class BaseNew(Dataset):
+    def __init__(self):
+        super().__init__()
+
+        self.annotation_dir = '/media/fredrik/HDD/Master/data/dataset/train/base+new/annotations'
+
+        self.train_images = '/media/fredrik/HDD/Master/data/dataset/train/base+new/train'
+        self.train_annos = '/media/fredrik/HDD/Master/data/dataset/train/base+new/annotations/train.json'

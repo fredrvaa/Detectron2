@@ -14,42 +14,48 @@ from detectron2.evaluation import COCOEvaluator
 from fix_annotations import fix_annotations
 from datasets import Base, BaseNew
 
-dataset = Base()
+print('Initialized')
 
-fix_annotations(dataset.annotation_dir)
 
-# Registering coco datasets
+fix_annotations()
+
+# TRAIN SET
+register_coco_instances("corrosion_train", {}, dataset.train_annos, dataset.train_images)
+
+# TEST SET
 register_coco_instances("corrosion_test", {}, dataset.test_annos, dataset.test_images)
 
-with open(os.path.join(dataset.save_dir, "last_checkpoint")) as file:
+#AUGMENTED TEST SET
+register_coco_instances("corrosion_aug", {}, dataset.aug_annos, dataset.aug_images)
+
+#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]'               
+#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base+new]'           
+#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base+new]2'          
+out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/100k[base]_50k[base+new]'
+
+'''
+|----------------TEST-----------------|-----------------AUG-----------------|
+|mAP@.5 = 0.742 | mAP@[.5:.95] = 0.470|mAP@.5 = 0.695 | mAP@[.5:.95] = 0.423|
+|mAP@.5 = 0.765 | mAP@[.5:.95] = 0.475|mAP@.5 = 0.678 | mAP@[.5:.95] = 0.412|
+|mAP@.5 = 0.760 | mAP@[.5:.95] = 0.480|mAP@.5 = 0.682 | mAP@[.5:.95] = 0.418|
+|mAP@.5 = 0.741 | mAP@[.5:.95] = 0.463|mAP@.5 = 0.742 | mAP@[.5:.95] = 0.470|
+'''
+
+with open(os.path.join(out_dir, "last_checkpoint")) as file:
     model = file.readline()
 
-model = "model_0149999.pth"
+model = "/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]/model_0149999.pth"
 
 cfg = get_cfg()
-cfg.OUTPUT_DIR = dataset.save_dir
+cfg.OUTPUT_DIR = out_dir
 cfg.merge_from_file("configs/COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
 cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model)
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set the testing threshold for this model
-cfg.DATASETS.TEST = ("corrosion_test", )
+cfg.DATASETS.TEST = ("corrosion_train", )
 predictor = DefaultPredictor(cfg)
 
-dataset_dicts = load_coco_json(dataset.test_annos, dataset.test_images, "corrosion_test")
-dataset_metadata = MetadataCatalog.get("corrosion_test")
-
-model = build_model(cfg)
-val_loader = build_detection_test_loader(cfg, "corrosion_test")
-evaluator = COCOEvaluator("corrosion_test", cfg, False, output_dir=dataset.save_dir)
+val_loader = build_detection_test_loader(cfg, "corrosion_train")
+evaluator = COCOEvaluator("corrosion_train", cfg, False, output_dir=out_dir)
 
 inference_on_dataset(predictor.model, val_loader, evaluator)
 
-# for d in random.sample(dataset_dicts, 10):
-#     im = cv2.imread(d["file_name"])
-#     outputs = predictor(im)
-#     v = Visualizer(im[:, :, ::-1],
-#                    metadata=dataset_metadata,
-#                    scale=0.3
-#     )
-#     v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-#     cv2.imshow('predicted', v.get_image()[:, :, ::-1])
-#     cv2.waitKey(-1)
