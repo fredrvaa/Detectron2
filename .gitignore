@@ -5,5 +5,8 @@
 *.pkl
 *.yaml
 *.json
+*.pth
+events.*
+last_checkpoint
 
 __pycache__
