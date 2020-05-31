@@ -1,1 +1,1 @@
-# Faster-R-CNN
+# Detectron2
