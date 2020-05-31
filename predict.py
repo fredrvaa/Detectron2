@@ -1,4 +1,4 @@
-import os, cv2, random, argparse
+import os, cv2, random, argparse, json
 
 from detectron2.modeling import build_model
 from detectron2.data.datasets import register_coco_instances
@@ -12,50 +12,38 @@ from detectron2.evaluation import inference_on_dataset
 from detectron2.evaluation import COCOEvaluator
 
 from fix_annotations import fix_annotations
-from datasets import Base, BaseNew
 
-print('Initialized')
+from detectron2.utils.logger import setup_logger
+setup_logger()
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--type', default='control')
+parser.add_argument('--models', default='O_n')
+parser.add_argument('--model', default='O10')
+parser.add_argument('--BoL', default='best')
+parser.add_argument('--output', type=str, default='quantitative', help='output folder')  # output folder
+args = parser.parse_args()
 
-fix_annotations()
+test_images = "../datasets/T/test"
+test_annos = "../datasets/T/annotations/test.json"
 
-# TRAIN SET
-register_coco_instances("corrosion_train", {}, dataset.train_annos, dataset.train_images)
-
+#fix_annotations(test_annos)
 # TEST SET
-register_coco_instances("corrosion_test", {}, dataset.test_annos, dataset.test_images)
+register_coco_instances("corrosion_test", {}, test_annos, test_images)
 
-#AUGMENTED TEST SET
-register_coco_instances("corrosion_aug", {}, dataset.aug_annos, dataset.aug_images)
-
-#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]'               
-#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base+new]'           
-#out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base+new]2'          
-out_dir = '/media/fredrik/HDD/Master/models/Faster R-CNN/100k[base]_50k[base+new]'
-
-'''
-|----------------TEST-----------------|-----------------AUG-----------------|
-|mAP@.5 = 0.742 | mAP@[.5:.95] = 0.470|mAP@.5 = 0.695 | mAP@[.5:.95] = 0.423|
-|mAP@.5 = 0.765 | mAP@[.5:.95] = 0.475|mAP@.5 = 0.678 | mAP@[.5:.95] = 0.412|
-|mAP@.5 = 0.760 | mAP@[.5:.95] = 0.480|mAP@.5 = 0.682 | mAP@[.5:.95] = 0.418|
-|mAP@.5 = 0.741 | mAP@[.5:.95] = 0.463|mAP@.5 = 0.742 | mAP@[.5:.95] = 0.470|
-'''
-
-with open(os.path.join(out_dir, "last_checkpoint")) as file:
-    model = file.readline()
-
-model = "/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]/model_0149999.pth"
-
+out_dir = os.path.join(args.output, args.models, args.model)
+os.makedirs(out_dir,exist_ok=True)
 cfg = get_cfg()
-cfg.OUTPUT_DIR = out_dir
 cfg.merge_from_file("configs/COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
-cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model)
-cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set the testing threshold for this model
-cfg.DATASETS.TEST = ("corrosion_train", )
+cfg.MODEL.WEIGHTS = os.path.join('models',args.type,args.models,args.model,f'{args.BoL}.pth')
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.05   # set the testing threshold for this model
+cfg.DATASETS.TEST = ("corrosion_test", )
 predictor = DefaultPredictor(cfg)
 
-val_loader = build_detection_test_loader(cfg, "corrosion_train")
-evaluator = COCOEvaluator("corrosion_train", cfg, False, output_dir=out_dir)
+val_loader = build_detection_test_loader(cfg, "corrosion_test")
+evaluator = COCOEvaluator("corrosion_test", cfg, False, output_dir=args.output)
 
-inference_on_dataset(predictor.model, val_loader, evaluator)
-
+print(f"Evaluating {args.models}/{args.model}")
+res = inference_on_dataset(predictor.model, val_loader, evaluator)
+with open(os.path.join(out_dir, 'results.txt'), 'w') as json_file:
+    json.dump(dict(res), json_file)

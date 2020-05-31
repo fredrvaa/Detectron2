@@ -18,18 +18,29 @@ print('Initialized')
 # TRAIN SET
 register_coco_instances("train", {}, "../datasets/D10/annotations/train.json", "../datasets/D10/train")
 
+# VAL SET
+register_coco_instances("train", {}, "../datasets/D10/annotations/train.json", "../datasets/D10/train")
+
+# Visualize
+# for i,d in enumerate(random.sample(dataset_dicts, 10)):
+#     img = cv2.imread(d["file_name"])
+#     visualizer = Visualizer(img[:, :, ::-1], metadata=dataset_metadata, scale=0.5)
+#     vis = visualizer.draw_dataset_dict(d)
+#     cv2.imshow(f"images/image_{i}", vis.get_image()[:, :, ::-1])
+#     cv2.waitKey(-1)
+
+
+model = "/media/fredrik/HDD/Master/models/Faster R-CNN/150k[base]/model_0149999.pth"
 cfg = get_cfg()
+cfg.OUTPUT_DIR = out_dir
+cfg.merge_from_file("configs/COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
+cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model)
+cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5   # set the testing threshold for this model
+cfg.DATASETS.TEST = ("corrosion_train", )
+predictor = DefaultPredictor(cfg)
 
 dataset_dicts = DatasetCatalog.get("train")
 dataset_metadata = MetadataCatalog.get("train")
-
-# Visualize
-for i,d in enumerate(random.sample(dataset_dicts, 10)):
-    img = cv2.imread(d["file_name"])
-    visualizer = Visualizer(img[:, :, ::-1], metadata=dataset_metadata, scale=0.5)
-    vis = visualizer.draw_dataset_dict(d)
-    cv2.imshow(f"images/image_{i}", vis.get_image()[:, :, ::-1])
-    cv2.waitKey(-1)
 
 # # Predictions
 # for i,d in enumerate(random.sample(dataset_dicts, 10)):
